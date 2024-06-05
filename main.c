@@ -15,19 +15,17 @@ int main(void) {
   InitWindow(SCR_WIDTH, SCR_HEIGHT, TITLE);
   SetTargetFPS(TARGET_FPS);
 
+  Texture2D tex_ns_perlin = tex_gen_noise_perlin(SCR_WIDTH, SCR_HEIGHT, PX,
+                                                  9001,
+                                                  fd_perlin);
   while (!WindowShouldClose()) {
-    Texture2D tex_ns_perlin = tex_gen_noise_perlin(SCR_WIDTH, SCR_HEIGHT, PX,
-                                                   2402,
-                                                   /* GetRandomValue(100, 3000), */
-                                                   fd_linear);
-    /* Texture2D tex_ns_perlin = tex_gen_noise_white(SCR_WIDTH, SCR_HEIGHT, PX); */
     BeginDrawing();
       ClearBackground(COLOR_BG);
       DrawTexture(tex_ns_perlin, 0, 0, WHITE);
     EndDrawing();
-    UnloadTexture(tex_ns_perlin);
   }
 
+  UnloadTexture(tex_ns_perlin);
   CloseWindow();
   exit(EXIT_SUCCESS);
 }

@@ -36,48 +36,38 @@ static float perlin_noise(float x, float y, int seed, fade_fn fn) {
   return lerp(fn(sy), n_x0y0, n_x1y0);
 }
 
-Texture2D tex_gen_rand_map(int w, int h, int px) {
-  Image img = GenImageColor(w, h, BLANK);
-  for (int y = 0; y < h; y += px) {
-    for (int x = 0; x < w; x += px) {
-      Color color = (Color) {
-        .r = (unsigned char) GetRandomValue(0, 255),
-        .g = (unsigned char) GetRandomValue(0, 255),
-        .b = (unsigned char) GetRandomValue(0, 255),
-        .a = 255
-      };
-      ImageDrawRectangle(&img, x, y, px, px, color);
-    }
+float perlin_compose(float x, float y, struct perlin_spec spec) {
+  float sum  = 0;
+  float freq = 1.0f;
+  float amp  = 1.0f;
+  float max  = 0;
+  while (spec.octaves-- >= 0) {
+    sum += amp * perlin_noise(x * freq, y * freq, spec.seed, spec.fn);
+    max += amp;
+    amp  *= spec.persistance;
+    freq *= spec.lacunarity;
   }
-  return LoadTextureFromImage(img);
-}
-
-Texture2D tex_gen_noise_white(int w, int h, int px) {
-  Image img = GenImageColor(w, h, BLANK);
-  for (int y = 0; y < h; y += px) {
-    for (int x = 0; x < w; x += px) {
-      float noise = (float) GetRandomValue(0, 255) / 255.0f;
-      Color color = (Color) {
-        .r = 0,
-        .g = (unsigned char) (noise * 255),
-        .b = 0,
-        .a = 255
-      };
-      ImageDrawRectangle(&img, x, y, px, px, color);
-    }
-  }
-  return LoadTextureFromImage(img);
+  return sum / max;
 }
 
 Texture2D tex_gen_noise_perlin(int w, int h, int px, int seed, fade_fn fn)
 {
   Image img = GenImageColor(w, h, BLANK);
+
+  struct perlin_spec spec = {
+    .seed = seed,
+    .fn = fn,
+    .octaves = 1,
+    .lacunarity = 5,
+    .persistance = 1,
+  };
+
   float scale = 8.0f;
   for (int y = 0; y < h; y += px) {
     for (int x = 0; x < w; x += px) {
-      float noise = perlin_noise((float) x / px / scale,
-                                 (float) y / px / scale,
-                                 seed, fn);
+      float noise = perlin_compose((float) x / (px * scale),
+                                   (float) y / (px * scale),
+                                    spec);
       noise = (noise + 1.0f) / 2.0f;
       Color color = (Color) {
         .r = 0,
