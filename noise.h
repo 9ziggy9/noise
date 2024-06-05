@@ -10,9 +10,10 @@ typedef float (*perlin_fn)(float, float);
 struct perlin_spec {
   int seed;
   fade_fn fn;
-  size_t octaves;
+  int octaves;
   float lacunarity;
   float persistance;
+  float scale;
 };
 
 static inline float lerp(float t, float a, float b) { return a + t * (b - a); }
@@ -26,7 +27,6 @@ static inline int hash(int x, int y, int seed) {
 }
 
 float perlin_compose(float x, float y, struct perlin_spec spec);
-
 Texture2D tex_gen_noise_perlin(int, int, int, int, fade_fn);
 
 #endif // NOISE_H_
